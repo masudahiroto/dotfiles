@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+._*
+
+# Editor / IDE
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Backup files
+*.bak
+*.orig
+
+# Auto-generated / local-only
+.mcp.json
