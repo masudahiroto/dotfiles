@@ -1,0 +1,8 @@
+{
+  "defaultModel": "kimi-k2.6",
+  "defaultProvider": "ollama",
+  "lastChangelogVersion": "0.70.6",
+  "packages": [
+    "npm:@ollama/pi-web-search"
+  ]
+}

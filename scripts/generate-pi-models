@@ -1,0 +1,23 @@
+#!/bin/sh
+set -eu
+
+: "${OLLAMA_API_KEY:?OLLAMA_API_KEY is not set}"
+
+template="${1:-$HOME/.pi/agent/models.json.template}"
+output="${2:-$HOME/.pi/agent/models.json}"
+
+envsubst_bin="$(command -v envsubst || true)"
+if [ -z "$envsubst_bin" ] && [ -x /opt/homebrew/opt/gettext/bin/envsubst ]; then
+  envsubst_bin=/opt/homebrew/opt/gettext/bin/envsubst
+fi
+if [ -z "$envsubst_bin" ] && [ -x /usr/local/opt/gettext/bin/envsubst ]; then
+  envsubst_bin=/usr/local/opt/gettext/bin/envsubst
+fi
+
+if [ -z "$envsubst_bin" ]; then
+  echo "envsubst is required. Install gettext first." >&2
+  exit 1
+fi
+
+"$envsubst_bin" < "$template" > "$output"
+chmod 600 "$output"

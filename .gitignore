@@ -15,3 +15,9 @@
 
 # Auto-generated / local-only
 .mcp.json
+
+# pi local/private
+pi/.pi/agent/auth.json
+pi/.pi/agent/models.json
+pi/.pi/agent/sessions/
+pi/.pi/agent/extensions/**/node_modules/
