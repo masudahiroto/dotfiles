@@ -1,11 +1,13 @@
 STOW_TARGET ?= $(HOME)
-STOW_PACKAGES := nvim pi
+STOW_PACKAGES := nvim pi doom
 PI_AGENT_DIR := $(STOW_TARGET)/.pi/agent
 PI_MODELS_TEMPLATE := $(PI_AGENT_DIR)/models.json.template
 PI_MODELS_OUTPUT := $(PI_AGENT_DIR)/models.json
 PI_SANDBOX_DIR := $(PI_AGENT_DIR)/extensions/sandbox
+DOOM_EMACS_DIR := $(STOW_TARGET)/.config/emacs
+DOOM_REPO := https://github.com/doomemacs/doomemacs
 
-.PHONY: install stow unstow restow stow-dry-run build build-pi pi-models pi-extensions check-stow check-npm check-pi-env check-pi-models-template
+.PHONY: install stow unstow restow stow-dry-run build build-pi setup-doom pi-models pi-extensions check-stow check-git check-npm check-pi-env check-pi-models-template
 
 install: stow build
 
@@ -25,6 +27,12 @@ build: build-pi
 
 build-pi: pi-models pi-extensions
 
+setup-doom: check-git
+	@if [ ! -d "$(DOOM_EMACS_DIR)/.git" ]; then \
+		git clone --depth 1 "$(DOOM_REPO)" "$(DOOM_EMACS_DIR)"; \
+	fi
+	"$(DOOM_EMACS_DIR)/bin/doom" sync
+
 pi-models: check-pi-env check-pi-models-template
 	scripts/generate-pi-models "$(PI_MODELS_TEMPLATE)" "$(PI_MODELS_OUTPUT)"
 
@@ -33,6 +41,9 @@ pi-extensions: check-npm
 
 check-stow:
 	@command -v stow >/dev/null 2>&1 || { echo "stow is required." >&2; exit 1; }
+
+check-git:
+	@command -v git >/dev/null 2>&1 || { echo "git is required." >&2; exit 1; }
 
 check-npm:
 	@command -v npm >/dev/null 2>&1 || { echo "npm is required." >&2; exit 1; }

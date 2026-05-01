@@ -16,6 +16,12 @@
 # Auto-generated / local-only
 .mcp.json
 
+# Doom Emacs local/generated/private
+doom/.config/emacs/
+doom/.config/doom/.local/
+doom/.config/doom/custom.el
+doom/.config/doom/env
+
 # pi local/private
 pi/.pi/agent/auth.json
 pi/.pi/agent/models.json
