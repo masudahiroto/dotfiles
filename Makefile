@@ -1,9 +1,13 @@
 STOW_TARGET ?= $(HOME)
 STOW_PACKAGES := nvim pi doom
-APT_PACKAGES := stow gettext-base ripgrep bubblewrap socat fd-find emacs-nox
+APT_PACKAGES := stow gettext-base ripgrep bubblewrap socat fd-find emacs-nox curl
 NPM_CODING_AGENT_PACKAGES := @openai/codex
 NPM_PI_CODING_AGENT_PACKAGES := @mariozechner/pi-coding-agent
 NPM_EMACS_PACKAGES := typescript typescript-language-server
+NEOVIM_ARCHIVE := nvim-linux-x86_64.tar.gz
+NEOVIM_URL := https://github.com/neovim/neovim/releases/latest/download/$(NEOVIM_ARCHIVE)
+NEOVIM_INSTALL_DIR := /opt/nvim-linux-x86_64
+NEOVIM_BIN := /usr/local/bin/nvim
 PI_AGENT_DIR := $(STOW_TARGET)/.pi/agent
 PI_MODELS_TEMPLATE := $(PI_AGENT_DIR)/models.json.template
 PI_MODELS_OUTPUT := $(PI_AGENT_DIR)/models.json
@@ -12,9 +16,9 @@ DOOM_EMACS_DIR := $(STOW_TARGET)/.config/emacs
 DOOM_REPO := https://github.com/doomemacs/doomemacs
 TREESIT_TYPESCRIPT_REPO := https://github.com/tree-sitter/tree-sitter-typescript
 
-.PHONY: install setup-system-packages setup-coding-agents install-codex install-pi-cli setup-emacs setup-emacs-lsp setup-emacs-treesit stow unstow restow stow-dry-run build build-pi setup-doom pi-models pi-extensions check-stow check-git check-npm check-emacs check-pi-env check-pi-models-template
+.PHONY: install setup-system-packages setup-neovim setup-coding-agents install-codex install-pi-cli setup-emacs setup-emacs-lsp setup-emacs-treesit stow unstow restow stow-dry-run build build-pi setup-doom pi-models pi-extensions check-stow check-git check-curl check-npm check-emacs check-pi-env check-pi-models-template
 
-install: setup-system-packages stow setup-coding-agents build
+install: setup-system-packages setup-neovim stow setup-coding-agents build
 
 setup-system-packages:
 	@if command -v apt-get >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then \
@@ -25,6 +29,17 @@ setup-system-packages:
 			command -v "$$package" >/dev/null 2>&1 || { echo "$$package is required." >&2; exit 1; }; \
 		done; \
 	fi
+
+setup-neovim: check-curl
+	@set -e; \
+	tmp_dir="$$(mktemp -d)"; \
+	trap 'rm -rf "$$tmp_dir"' EXIT; \
+	curl -fsSL -o "$$tmp_dir/$(NEOVIM_ARCHIVE)" "$(NEOVIM_URL)"; \
+	sudo rm -rf "$(NEOVIM_INSTALL_DIR)"; \
+	sudo tar -C /opt -xzf "$$tmp_dir/$(NEOVIM_ARCHIVE)"; \
+	sudo mkdir -p "$$(dirname "$(NEOVIM_BIN)")"; \
+	sudo ln -sfn "$(NEOVIM_INSTALL_DIR)/bin/nvim" "$(NEOVIM_BIN)"; \
+	"$(NEOVIM_BIN)" --version | head -n 1
 
 setup-coding-agents: install-codex install-pi-cli
 
@@ -76,6 +91,9 @@ check-stow:
 
 check-git:
 	@command -v git >/dev/null 2>&1 || { echo "git is required." >&2; exit 1; }
+
+check-curl:
+	@command -v curl >/dev/null 2>&1 || { echo "curl is required." >&2; exit 1; }
 
 check-npm:
 	@command -v npm >/dev/null 2>&1 || { echo "npm is required." >&2; exit 1; }

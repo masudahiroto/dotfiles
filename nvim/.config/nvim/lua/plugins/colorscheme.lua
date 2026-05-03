@@ -1,14 +1,16 @@
 return {
   {
-    "folke/tokyonight.nvim",
+    "navarasu/onedark.nvim",
+    lazy = false,
+    priority = 1000,
     opts = {
-      style = "night", -- storm(デフォルト)/night/moon/day
+      style = "darker",
     },
   },
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "tokyonight-night",
+      colorscheme = "onedark",
     },
   },
 }
