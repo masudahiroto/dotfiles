@@ -1,7 +1,8 @@
 STOW_TARGET ?= $(HOME)
 STOW_PACKAGES := nvim pi doom
-APT_PACKAGES := stow gettext-base ripgrep bubblewrap socat fd-find emacs
+APT_PACKAGES := stow gettext-base ripgrep bubblewrap socat fd-find emacs-nox
 NPM_CODING_AGENT_PACKAGES := @openai/codex
+NPM_PI_CODING_AGENT_PACKAGES := @mariozechner/pi-coding-agent
 NPM_EMACS_PACKAGES := typescript typescript-language-server
 PI_AGENT_DIR := $(STOW_TARGET)/.pi/agent
 PI_MODELS_TEMPLATE := $(PI_AGENT_DIR)/models.json.template
@@ -9,8 +10,9 @@ PI_MODELS_OUTPUT := $(PI_AGENT_DIR)/models.json
 PI_SANDBOX_DIR := $(PI_AGENT_DIR)/extensions/sandbox
 DOOM_EMACS_DIR := $(STOW_TARGET)/.config/emacs
 DOOM_REPO := https://github.com/doomemacs/doomemacs
+TREESIT_TYPESCRIPT_REPO := https://github.com/tree-sitter/tree-sitter-typescript
 
-.PHONY: install setup-system-packages setup-coding-agents install-codex install-pi-cli setup-emacs setup-emacs-lsp setup-emacs-treesit stow unstow restow stow-dry-run build build-pi setup-doom pi-models pi-extensions check-stow check-git check-npm check-curl check-emacs check-pi-env check-pi-models-template
+.PHONY: install setup-system-packages setup-coding-agents install-codex install-pi-cli setup-emacs setup-emacs-lsp setup-emacs-treesit stow unstow restow stow-dry-run build build-pi setup-doom pi-models pi-extensions check-stow check-git check-npm check-emacs check-pi-env check-pi-models-template
 
 install: setup-system-packages stow setup-doom setup-coding-agents setup-emacs build
 
@@ -29,8 +31,8 @@ setup-coding-agents: install-codex install-pi-cli
 install-codex: check-npm
 	npm install -g $(NPM_CODING_AGENT_PACKAGES)
 
-install-pi-cli: check-curl
-	curl -fsSL https://pi.dev/install.sh | sh
+install-pi-cli: check-npm
+	npm install -g $(NPM_PI_CODING_AGENT_PACKAGES)
 
 setup-emacs: setup-emacs-lsp setup-emacs-treesit
 
@@ -38,11 +40,8 @@ setup-emacs-lsp: check-npm
 	npm install -g $(NPM_EMACS_PACKAGES)
 
 setup-emacs-treesit: check-emacs
-	emacs --batch \
-		--eval "(require 'treesit)" \
-		--eval "(setq treesit-language-source-alist '((typescript \"https://github.com/tree-sitter/tree-sitter-typescript\" \"master\" \"typescript/src\") (tsx \"https://github.com/tree-sitter/tree-sitter-typescript\" \"master\" \"tsx/src\")))" \
-		--eval "(unless (treesit-language-available-p 'typescript) (treesit-install-language-grammar 'typescript))" \
-		--eval "(unless (treesit-language-available-p 'tsx) (treesit-install-language-grammar 'tsx))"
+	emacs --init-directory "$(DOOM_EMACS_DIR)" \
+		--eval "(progn (require 'treesit) (setq treesit-language-source-alist '((typescript \"$(TREESIT_TYPESCRIPT_REPO)\" \"master\" \"typescript/src\") (tsx \"$(TREESIT_TYPESCRIPT_REPO)\" \"master\" \"tsx/src\"))) (unless (treesit-language-available-p 'typescript) (treesit-install-language-grammar 'typescript)) (unless (treesit-language-available-p 'tsx) (treesit-install-language-grammar 'tsx)) (kill-emacs 0))"
 
 stow: check-stow
 	stow -t "$(STOW_TARGET)" $(STOW_PACKAGES)
@@ -80,9 +79,6 @@ check-git:
 
 check-npm:
 	@command -v npm >/dev/null 2>&1 || { echo "npm is required." >&2; exit 1; }
-
-check-curl:
-	@command -v curl >/dev/null 2>&1 || { echo "curl is required." >&2; exit 1; }
 
 check-emacs:
 	@command -v emacs >/dev/null 2>&1 || { echo "emacs is required." >&2; exit 1; }
