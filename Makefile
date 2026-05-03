@@ -1,5 +1,8 @@
 STOW_TARGET ?= $(HOME)
 STOW_PACKAGES := nvim pi doom
+APT_PACKAGES := stow gettext-base ripgrep bubblewrap socat fd-find emacs
+NPM_CODING_AGENT_PACKAGES := @openai/codex
+NPM_EMACS_PACKAGES := typescript typescript-language-server
 PI_AGENT_DIR := $(STOW_TARGET)/.pi/agent
 PI_MODELS_TEMPLATE := $(PI_AGENT_DIR)/models.json.template
 PI_MODELS_OUTPUT := $(PI_AGENT_DIR)/models.json
@@ -7,9 +10,39 @@ PI_SANDBOX_DIR := $(PI_AGENT_DIR)/extensions/sandbox
 DOOM_EMACS_DIR := $(STOW_TARGET)/.config/emacs
 DOOM_REPO := https://github.com/doomemacs/doomemacs
 
-.PHONY: install stow unstow restow stow-dry-run build build-pi setup-doom pi-models pi-extensions check-stow check-git check-npm check-pi-env check-pi-models-template
+.PHONY: install setup-system-packages setup-coding-agents install-codex install-pi-cli setup-emacs setup-emacs-lsp setup-emacs-treesit stow unstow restow stow-dry-run build build-pi setup-doom pi-models pi-extensions check-stow check-git check-npm check-curl check-emacs check-pi-env check-pi-models-template
 
-install: stow build
+install: setup-system-packages stow setup-doom setup-coding-agents setup-emacs build
+
+setup-system-packages:
+	@if command -v apt-get >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then \
+		sudo apt-get update; \
+		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $(APT_PACKAGES); \
+	else \
+		for package in stow envsubst rg bwrap socat fdfind emacs; do \
+			command -v "$$package" >/dev/null 2>&1 || { echo "$$package is required." >&2; exit 1; }; \
+		done; \
+	fi
+
+setup-coding-agents: install-codex install-pi-cli
+
+install-codex: check-npm
+	npm install -g $(NPM_CODING_AGENT_PACKAGES)
+
+install-pi-cli: check-curl
+	curl -fsSL https://pi.dev/install.sh | sh
+
+setup-emacs: setup-emacs-lsp setup-emacs-treesit
+
+setup-emacs-lsp: check-npm
+	npm install -g $(NPM_EMACS_PACKAGES)
+
+setup-emacs-treesit: check-emacs
+	emacs --batch \
+		--eval "(require 'treesit)" \
+		--eval "(setq treesit-language-source-alist '((typescript \"https://github.com/tree-sitter/tree-sitter-typescript\" \"master\" \"typescript/src\") (tsx \"https://github.com/tree-sitter/tree-sitter-typescript\" \"master\" \"tsx/src\")))" \
+		--eval "(unless (treesit-language-available-p 'typescript) (treesit-install-language-grammar 'typescript))" \
+		--eval "(unless (treesit-language-available-p 'tsx) (treesit-install-language-grammar 'tsx))"
 
 stow: check-stow
 	stow -t "$(STOW_TARGET)" $(STOW_PACKAGES)
@@ -27,7 +60,7 @@ build: build-pi
 
 build-pi: pi-models pi-extensions
 
-setup-doom: check-git
+setup-doom: check-git check-emacs
 	@if [ ! -d "$(DOOM_EMACS_DIR)/.git" ]; then \
 		git clone --depth 1 "$(DOOM_REPO)" "$(DOOM_EMACS_DIR)"; \
 	fi
@@ -47,6 +80,12 @@ check-git:
 
 check-npm:
 	@command -v npm >/dev/null 2>&1 || { echo "npm is required." >&2; exit 1; }
+
+check-curl:
+	@command -v curl >/dev/null 2>&1 || { echo "curl is required." >&2; exit 1; }
+
+check-emacs:
+	@command -v emacs >/dev/null 2>&1 || { echo "emacs is required." >&2; exit 1; }
 
 check-pi-env:
 	@test -n "$$OLLAMA_API_KEY" || { echo "OLLAMA_API_KEY is required." >&2; exit 1; }
