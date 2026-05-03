@@ -14,7 +14,7 @@ TREESIT_TYPESCRIPT_REPO := https://github.com/tree-sitter/tree-sitter-typescript
 
 .PHONY: install setup-system-packages setup-coding-agents install-codex install-pi-cli setup-emacs setup-emacs-lsp setup-emacs-treesit stow unstow restow stow-dry-run build build-pi setup-doom pi-models pi-extensions check-stow check-git check-npm check-emacs check-pi-env check-pi-models-template
 
-install: setup-system-packages stow setup-doom setup-coding-agents setup-emacs build
+install: setup-system-packages stow setup-coding-agents build
 
 setup-system-packages:
 	@if command -v apt-get >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then \
@@ -34,7 +34,7 @@ install-codex: check-npm
 install-pi-cli: check-npm
 	npm install -g $(NPM_PI_CODING_AGENT_PACKAGES)
 
-setup-emacs: setup-emacs-lsp setup-emacs-treesit
+setup-emacs: setup-doom setup-emacs-lsp setup-emacs-treesit
 
 setup-emacs-lsp: check-npm
 	npm install -g $(NPM_EMACS_PACKAGES)
