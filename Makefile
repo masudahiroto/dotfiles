@@ -12,8 +12,9 @@ PI_MODELS_TEMPLATE := $(PI_AGENT_DIR)/models.json.template
 PI_MODELS_OUTPUT := $(PI_AGENT_DIR)/models.json
 PI_SANDBOX_DIR := $(PI_AGENT_DIR)/extensions/sandbox
 GROK_INSTALL_URL := https://x.ai/cli/install.sh
+ANTIGRAVITY_INSTALL_URL := https://antigravity.google/cli/install.sh
 
-.PHONY: install setup-system-packages setup-neovim setup-coding-agents install-codex install-pi-cli install-grok stow unstow restow stow-dry-run build build-pi pi-models pi-extensions check-stow check-curl check-npm check-pi-env check-pi-models-template
+.PHONY: install setup-system-packages setup-neovim setup-coding-agents install-codex install-pi-cli install-grok install-antigravity stow unstow restow stow-dry-run build build-pi pi-models pi-extensions check-stow check-curl check-npm check-pi-env check-pi-models-template
 
 install: setup-system-packages setup-neovim stow setup-coding-agents build
 
@@ -38,7 +39,7 @@ setup-neovim: check-curl
 	sudo ln -sfn "$(NEOVIM_INSTALL_DIR)/bin/nvim" "$(NEOVIM_BIN)"; \
 	"$(NEOVIM_BIN)" --version | head -n 1
 
-setup-coding-agents: install-codex install-pi-cli install-grok
+setup-coding-agents: install-codex install-pi-cli install-grok install-antigravity
 
 install-codex: check-npm
 	npm install -g $(NPM_CODING_AGENT_PACKAGES)
@@ -48,6 +49,9 @@ install-pi-cli: check-npm
 
 install-grok: check-curl
 	curl -fsSL "$(GROK_INSTALL_URL)" | bash
+
+install-antigravity: check-curl
+	curl -fsSL "$(ANTIGRAVITY_INSTALL_URL)" | bash
 
 stow: check-stow
 	stow -t "$(STOW_TARGET)" $(STOW_PACKAGES)
