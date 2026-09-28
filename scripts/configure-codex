@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+target_home="${1:-$HOME}"
+codex_home="${CODEX_HOME:-$target_home/.codex}"
+config_file="$codex_home/config.toml"
+tmp_file="$codex_home/config.toml.tmp.$$"
+
+mkdir -p "$codex_home"
+trap 'rm -f "$tmp_file"' EXIT HUP INT TERM
+
+cat > "$tmp_file" <<'EOF'
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+EOF
+
+mv "$tmp_file" "$config_file"
