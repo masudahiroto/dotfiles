@@ -14,9 +14,9 @@ PI_SANDBOX_DIR := $(PI_AGENT_DIR)/extensions/sandbox
 GROK_INSTALL_URL := https://x.ai/cli/install.sh
 ANTIGRAVITY_INSTALL_URL := https://antigravity.google/cli/install.sh
 
-.PHONY: install setup-system-packages setup-neovim setup-coding-agents install-codex install-pi-cli install-grok install-antigravity stow unstow restow stow-dry-run build build-pi pi-models pi-extensions check-stow check-curl check-npm check-pi-env check-pi-models-template
+.PHONY: install setup-system-packages setup-neovim setup-codex setup-coding-agents install-codex install-pi-cli install-grok install-antigravity stow unstow restow stow-dry-run build build-pi pi-models pi-extensions check-stow check-curl check-npm check-pi-env check-pi-models-template
 
-install: setup-system-packages setup-neovim stow setup-coding-agents build
+install: setup-system-packages setup-neovim stow setup-codex setup-coding-agents build
 
 setup-system-packages:
 	@if command -v apt-get >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then \
@@ -40,6 +40,9 @@ setup-neovim: check-curl
 	"$(NEOVIM_BIN)" --version | head -n 1
 
 setup-coding-agents: install-codex install-pi-cli install-grok install-antigravity
+
+setup-codex:
+	scripts/configure-codex "$(STOW_TARGET)"
 
 install-codex: check-npm
 	npm install -g $(NPM_CODING_AGENT_PACKAGES)
