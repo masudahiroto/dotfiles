@@ -10,6 +10,8 @@ mkdir -p "$codex_home"
 trap 'rm -f "$tmp_file"' EXIT HUP INT TERM
 
 cat > "$tmp_file" <<'EOF'
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
 approval_policy = "on-request"
 approvals_reviewer = "auto_review"
 EOF
