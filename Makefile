@@ -3,9 +3,17 @@ STOW_PACKAGES := nvim pi
 APT_PACKAGES := stow gettext-base ripgrep bubblewrap socat fd-find curl
 NPM_CODING_AGENT_PACKAGES := @openai/codex
 NPM_PI_CODING_AGENT_PACKAGES := @mariozechner/pi-coding-agent
-NEOVIM_ARCHIVE := nvim-linux-x86_64.tar.gz
+UNAME_M := $(shell uname -m)
+ifeq ($(UNAME_M),x86_64)
+NEOVIM_ARCH := x86_64
+else ifeq ($(UNAME_M),aarch64)
+NEOVIM_ARCH := arm64
+else
+$(error Unsupported CPU architecture for Neovim: $(UNAME_M))
+endif
+NEOVIM_ARCHIVE := nvim-linux-$(NEOVIM_ARCH).tar.gz
 NEOVIM_URL := https://github.com/neovim/neovim/releases/latest/download/$(NEOVIM_ARCHIVE)
-NEOVIM_INSTALL_DIR := /opt/nvim-linux-x86_64
+NEOVIM_INSTALL_DIR := /opt/nvim-linux-$(NEOVIM_ARCH)
 NEOVIM_BIN := /usr/local/bin/nvim
 PI_AGENT_DIR := $(STOW_TARGET)/.pi/agent
 PI_MODELS_TEMPLATE := $(PI_AGENT_DIR)/models.json.template
